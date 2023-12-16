@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Update Order</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <style>
+    body {
+        background-color: yellow;
+    }
+
+    .form-box {
+      background-color: lightgreen;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 0 auto;
+      width: 50%;
+      margin-top: 50px;
+    }
+
+    .messages {
+        color: red;
+        font-weight: bold;
+      }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="form-box">
+        <center><b><h2>Update Order</center></b></h2><br>
+
+        {% if messages %}
+          <ul class="messages">
+            {% for message in messages %}
+              <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+          </ul>
+          <p><a href="{% url 'orderlist' %}">Click here to go to the order list page</a></p>
+        {% endif %}
+      <form method="POST" id="orderForm">
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label for="{{ form.customer.id_for_label }}">Customer</label>
+          {{ form.customer }}
+        </div><br>
+
+        <div class="form-group">
+          <label for="{{ form.product.id_for_label }}">Product</label>
+          {{ form.product }}
+        </div><br>
+
+        <div class="form-group">
+          <label for="id_unit_price">Unit Price</label>
+          <input type="text" id="id_unit_price" name="unit_price">
+        </div><br>
+
+        <div class="form-group">
+          <label for="{{ form.quantity.id_for_label }}">Quantity</label>
+          {{ form.quantity }}
+        </div><br>
+
+        <div class="form-group">
+          <label for="{{ form.total_price.id_for_label }}">Total Price</label>
+          {{ form.total_price }}
+        </div><br>
+
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary">Update Order</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"
+  integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script>
+
+    $(document).ready(function() {
+        // Set unit price to read-only
+        $("#id_unit_price").prop('readonly', true);
+    
+        // Fetch and display unit price on page load
+        fetchUnitPrice();
+    });
+
+  function fetchUnitPrice() {
+    var product = $("#id_product").val();
+    if (product) {
+        $.ajax({
+            type: "POST",
+            url: "/get_unit_price/",
+            data: { id: product, csrfmiddlewaretoken: '{{ csrf_token }}' },
+            dataType: "json",
+            success: function(result) {
+                $("#id_unit_price").val(parseFloat(result.product_unit_price));
+            }
+        });
+    }
+}
+
+$("#id_product").on("change", function() {
+    fetchUnitPrice();
+});
+
+// Event listener for quantity change
+$("#id_quantity").on("change", function() {
+    var quantity = $("#id_quantity").val();
+    var units = $("#id_unit_price").val();
+    var total_price = quantity * units;
+    $("#id_total_price").val(parseFloat(total_price));
+});
+</script>
